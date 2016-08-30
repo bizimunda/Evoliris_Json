@@ -22,6 +22,11 @@
         android:layout_height="wrap_content"
         android:visibility="gone"
         android:id="@+id/pb_main"/>
+    <EditText
+        android:id="@+id/ed_main_json"
+        android:hint="Json address"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content" />
 
     <TextView
         android:layout_width="match_parent"

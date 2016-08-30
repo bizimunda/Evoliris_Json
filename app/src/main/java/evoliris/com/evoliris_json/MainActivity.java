@@ -52,6 +52,8 @@ public class MainActivity extends ActionBarActivity implements GetAsyncTask.GetA
     }
 
 
+
+
     @Override
     public void onPreGet() {
         tvMainResult.setVisibility(View.GONE);
