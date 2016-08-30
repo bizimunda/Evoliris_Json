@@ -1,11 +1,15 @@
 package evoliris.com.evoliris_json;
 
+import android.content.Context;
+import android.net.ConnectivityManager;
+import android.net.NetworkInfo;
 import android.os.Bundle;
 import android.support.v7.app.ActionBarActivity;
 import android.view.View;
 import android.widget.Button;
 import android.widget.ProgressBar;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import evoliris.com.evoliris_json.task.GetAsyncTask;
 
@@ -28,8 +32,20 @@ public class MainActivity extends ActionBarActivity implements GetAsyncTask.GetA
         btnMainRequest.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                GetAsyncTask task= new GetAsyncTask(MainActivity.this);
-                task.execute("http://www.google.be");
+
+                ConnectivityManager cm = (ConnectivityManager)
+                        getSystemService(Context.CONNECTIVITY_SERVICE);
+
+                NetworkInfo activeNetwork = cm.getActiveNetworkInfo();
+                boolean isConnected = activeNetwork != null &&
+                        activeNetwork.isConnectedOrConnecting();
+
+                if(isConnected) {
+                    GetAsyncTask task = new GetAsyncTask(MainActivity.this);
+                    task.execute("http://www.google.be");
+                } else {
+                    Toast.makeText(MainActivity.this,"No data connection", Toast.LENGTH_SHORT).show();
+                }
 
             }
         });
