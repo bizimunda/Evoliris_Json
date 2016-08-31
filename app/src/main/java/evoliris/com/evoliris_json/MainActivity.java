@@ -14,6 +14,8 @@ import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.ProgressBar;
+import android.widget.RadioButton;
+import android.widget.RadioGroup;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -27,7 +29,7 @@ import evoliris.com.evoliris_json.task.GetAsyncTask;
 import evoliris.com.evoliris_json.task.GetImageAsyncTask;
 
 
-public class MainActivity extends ActionBarActivity implements GetAsyncTask.GetAsynTaskCallback, LocationListener{
+public class MainActivity extends ActionBarActivity implements GetAsyncTask.GetAsynTaskCallback, LocationListener {
 
     private Button btnMainRequest;
     private ProgressBar pbMainLoading;
@@ -35,10 +37,12 @@ public class MainActivity extends ActionBarActivity implements GetAsyncTask.GetA
     private ImageView imageView;
     private EditText etMainCityName;
     private LocationManager locationManager;
-    private Location location;
     private String provider;
-
-
+    private RadioGroup radioGroup;
+    private RadioButton radioButtonManual, radioButtonLocation;
+    private GetAsyncTask task;
+    private ConnectivityManager cm;
+    NetworkInfo activeNetwork;
 
 
     @Override
@@ -46,16 +50,21 @@ public class MainActivity extends ActionBarActivity implements GetAsyncTask.GetA
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        btnMainRequest= (Button) findViewById(R.id.btn_main_request);
-        pbMainLoading= (ProgressBar) findViewById(R.id.pb_main);
+        btnMainRequest = (Button) findViewById(R.id.btn_main_request);
+        pbMainLoading = (ProgressBar) findViewById(R.id.pb_main);
         tvMainCity = (TextView) findViewById(R.id.tv_main_city);
         tvMainCountry = (TextView) findViewById(R.id.tv_main_country);
         tvMainTemp = (TextView) findViewById(R.id.tv_main_temp);
         tvMainTime = (TextView) findViewById(R.id.tv_main_time);
         tvMainLat = (TextView) findViewById(R.id.tv_main_lat);
         tvMainLong = (TextView) findViewById(R.id.tv_main_long);
-        etMainCityName= (EditText) findViewById(R.id.et_main_cityName);
-        imageView= (ImageView) findViewById(R.id.iv_main_icon);
+        etMainCityName = (EditText) findViewById(R.id.et_main_cityName);
+        imageView = (ImageView) findViewById(R.id.iv_main_icon);
+        radioGroup = (RadioGroup) findViewById(R.id.rg_main_choice);
+        radioButtonLocation = (RadioButton) findViewById(R.id.rb_main_location);
+        radioButtonManual = (RadioButton) findViewById(R.id.rb_main_manual);
+
+        etMainCityName.setEnabled(false);
 
         locationManager = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
         // Define the criteria how to select the locatioin provider -> use
@@ -73,35 +82,34 @@ public class MainActivity extends ActionBarActivity implements GetAsyncTask.GetA
             tvMainLat.setText("Location not available");
         }
 
+        final int checkedId= radioGroup.getCheckedRadioButtonId();
+
 
         btnMainRequest.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
 
-                ConnectivityManager cm = (ConnectivityManager)
+                cm = (ConnectivityManager)
                         getSystemService(Context.CONNECTIVITY_SERVICE);
 
-                NetworkInfo activeNetwork = cm.getActiveNetworkInfo();
+                activeNetwork = cm.getActiveNetworkInfo();
                 boolean isConnected = activeNetwork != null &&
                         activeNetwork.isConnectedOrConnecting();
-
-                if(isConnected) {
-                    GetAsyncTask task = new GetAsyncTask(MainActivity.this);
+                if (isConnected) {
+                    task = new GetAsyncTask(MainActivity.this);
 
                     //User adds city in the EditText
-                    //task.execute("http://api.openweathermap.org/data/2.5/weather?q="+etMainCityName.getText().toString()+"&units=metric&appid=9124335619b9206a59b03318f5625a3d");
+                    //task.execute("http://api.openweathermap.org/data/2.5/weather?q=" + etMainCityName.getText().toString() + "&units=metric&appid=9124335619b9206a59b03318f5625a3d");
 
                     //It locates weather using locationManager
-                    task.execute("http://api.openweathermap.org/data/2.5/weather?lat=" + tvMainLat.getText() + "&lon=" + tvMainLong.getText() + "&appid=9124335619b9206a59b03318f5625a3d&units=metric");
+                    //task.execute("http://api.openweathermap.org/data/2.5/weather?lat=" + tvMainLat.getText() + "&lon=" + tvMainLong.getText() + "&appid=9124335619b9206a59b03318f5625a3d&units=metric");
+
                 } else {
-                    Toast.makeText(MainActivity.this,"No data connection", Toast.LENGTH_SHORT).show();
+                    Toast.makeText(MainActivity.this, "No data connection", Toast.LENGTH_SHORT).show();
                 }
                 etMainCityName.setText("");
-
             }
         });
-
-
     }
 
     @Override
@@ -112,10 +120,8 @@ public class MainActivity extends ActionBarActivity implements GetAsyncTask.GetA
 
     @Override
     public void onLocationChanged(Location location) {
-
         tvMainLong.setText(String.valueOf(location.getLongitude()));
         tvMainLat.setText(String.valueOf(location.getLatitude()));
-
     }
 
     @Override
@@ -145,10 +151,10 @@ public class MainActivity extends ActionBarActivity implements GetAsyncTask.GetA
     @Override
     public void onPostGet(String s) {
 
-        Gson gson= new Gson();
-        Model model= gson.fromJson(s, Model.class);
+        Gson gson = new Gson();
+        Model model = gson.fromJson(s, Model.class);
 
-        GetImageAsyncTask getImageAsyncTask= new GetImageAsyncTask(imageView);
+        GetImageAsyncTask getImageAsyncTask = new GetImageAsyncTask(imageView);
         getImageAsyncTask.execute(model.getWeather().get(0).getIcon());
 
 
@@ -156,16 +162,14 @@ public class MainActivity extends ActionBarActivity implements GetAsyncTask.GetA
         String currentDateAndTime = sdf.format(new Date());
 
 
-
         tvMainCountry.setText(model.getSys().getCountry());
         tvMainCity.setText(model.getName());
-        tvMainTemp.setText(String.valueOf(model.getMain().getTemp())+" C°");
-        tvMainTime.setText("Last update at\n"+currentDateAndTime.toString());
+        tvMainTemp.setText(String.valueOf(model.getMain().getTemp()) + " C°");
+        tvMainTime.setText("Last update at\n" + currentDateAndTime.toString());
         tvMainCity.setVisibility(View.VISIBLE);
         pbMainLoading.setVisibility(View.GONE);
 
     }
-
 
 
 }

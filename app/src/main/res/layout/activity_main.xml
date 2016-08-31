@@ -10,6 +10,23 @@
     android:paddingTop="@dimen/activity_vertical_margin"
     tools:context=".MainActivity">
 
+    <RadioGroup
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:id="@+id/rg_main_choice">
+
+        <RadioButton
+            android:id="@+id/rb_main_manual"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Manual"/>
+        <RadioButton
+            android:id="@+id/rb_main_location"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Using location manager"/>
+        </RadioGroup>
+
     <EditText
         android:hint="City name"
         android:id="@+id/et_main_cityName"
